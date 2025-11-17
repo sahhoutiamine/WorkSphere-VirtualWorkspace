@@ -1,11 +1,113 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Hello World</title>
+    <link rel="stylesheet" href="style.css" />
+    <title>WorkSphere - Gestion du Personnel</title>
   </head>
   <body>
-    <h1>Hello World</h1>
+    <div class="container">
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <h2>Personnel Non Assigné</h2>
+        <button class="add-worker-btn" id="addWorkerBtn">
+          + Ajouter un Employé
+        </button>
+        <div id="unassignedList"></div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="main-content">
+        <div class="workspace-header">
+          <h1>WorkSphere - Virtual Workspace</h1>
+          <p style="color: #6c757d">
+            Gérez l'affectation de votre personnel dans les différentes zones
+          </p>
+        </div>
+
+        <div class="workspace-grid">
+          <!-- Conference Room -->
+          <div class="room-card" id="room-conference">
+            <div class="room-header">
+              <h3>Salle de Conférence</h3>
+              <button class="add-to-room-btn" data-room="conference">+</button>
+            </div>
+            <div class="room-workers" id="workers-conference"></div>
+            <div class="room-capacity">
+              Capacité: <span id="cap-conference">0</span>/10
+            </div>
+          </div>
+
+          <!-- Reception -->
+          <div class="room-card required-empty" id="room-reception">
+            <div class="room-header">
+              <h3>Réception</h3>
+              <button class="add-to-room-btn" data-room="reception">+</button>
+            </div>
+            <div class="room-workers" id="workers-reception"></div>
+            <div class="room-capacity">
+              Capacité: <span id="cap-reception">0</span>/3
+            </div>
+          </div>
+
+          <!-- Server Room -->
+          <div class="room-card required-empty" id="room-server">
+            <div class="room-header">
+              <h3>Salle des Serveurs</h3>
+              <button class="add-to-room-btn" data-room="server">+</button>
+            </div>
+            <div class="room-workers" id="workers-server"></div>
+            <div class="room-capacity">
+              Capacité: <span id="cap-server">0</span>/5
+            </div>
+          </div>
+
+          <!-- Security Room -->
+          <div class="room-card required-empty" id="room-security">
+            <div class="room-header">
+              <h3>Salle de Sécurité</h3>
+              <button class="add-to-room-btn" data-room="security">+</button>
+            </div>
+            <div class="room-workers" id="workers-security"></div>
+            <div class="room-capacity">
+              Capacité: <span id="cap-security">0</span>/4
+            </div>
+          </div>
+
+          <!-- Corridor Vertical -->
+          <div class="corridor">Couloir</div>
+
+          <!-- Corridor Horizontal -->
+          <div class="corridor-horizontal">Couloir</div>
+
+          <!-- Staff Room -->
+          <div class="room-card" id="room-staff">
+            <div class="room-header">
+              <h3>Salle du Personnel</h3>
+              <button class="add-to-room-btn" data-room="staff">+</button>
+            </div>
+            <div class="room-workers" id="workers-staff"></div>
+            <div class="room-capacity">
+              Capacité: <span id="cap-staff">0</span>/15
+            </div>
+          </div>
+
+          <!-- Archives Room -->
+          <div class="room-card" id="room-archives">
+            <div class="room-header">
+              <h3>Salle d'Archives</h3>
+              <button class="add-to-room-btn" data-room="archives">+</button>
+            </div>
+            <div class="room-workers" id="workers-archives"></div>
+            <div class="room-capacity">
+              Capacité: <span id="cap-archives">0</span>/5
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
   </body>
 </html>
