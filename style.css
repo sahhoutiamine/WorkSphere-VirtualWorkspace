@@ -132,6 +132,7 @@ body {
 .workspace-grid {
   background: url(workspace.jpg) no-repeat center center/cover;
   min-height: 650px;
+  max-height: 650px;
   display: grid;
   grid-template-columns: 2fr 0.8fr 1fr 1fr;
   grid-template-rows: 1fr 0.8fr 1fr;
@@ -162,6 +163,7 @@ body {
 /* Security Room - Bottom Right Col 3 */
 .room-card:nth-child(4) {
   margin-left: -50px;
+  margin-right: 20px;
   margin-top: 5px;
   margin-bottom: 0px;
   grid-column: 3 / 4;
@@ -208,7 +210,7 @@ body {
 
 #room-archives {
   margin-bottom: -5px;
-  margin-left: -20px;
+  margin-left: -40px;
 }
 
 .room-card {
@@ -222,7 +224,6 @@ body {
 }
 
 .room-card.required-empty {
-  border-color: #fecaca39;
   background: rgba(255, 0, 0, 0.118);
 }
 
@@ -246,6 +247,7 @@ body {
   background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   color: white;
   border: none;
+  margin-right: 10px;
   width: 32px;
   height: 32px;
   border-radius: 50%;
