@@ -131,6 +131,7 @@ body {
 }
 
 .workspace-grid {
+  background: url(workspace.jpg) no-repeat center center/cover;
   display: grid;
   grid-template-columns: 2fr 0.8fr 1fr 1fr;
   grid-template-rows: 1fr 0.8fr 1fr;
@@ -146,18 +147,23 @@ body {
 
 /* Reception - Top Right Col 3 */
 .room-card:nth-child(2) {
+  margin-left: -50px;
   grid-column: 3 / 4;
   grid-row: 1 / 2;
 }
 
 /* Server Room - Top Right Col 4 */
 .room-card:nth-child(3) {
+  margin-left: -20px;
   grid-column: 4 / 5;
   grid-row: 1 / 2;
 }
 
 /* Security Room - Bottom Right Col 3 */
 .room-card:nth-child(4) {
+  margin-left: -50px;
+  margin-top: 5px;
+  margin-bottom: 0px;
   grid-column: 3 / 4;
   grid-row: 3 / 4;
 }
@@ -166,8 +172,10 @@ body {
 .corridor {
   grid-column: 2 / 3;
   grid-row: 1 / 4;
-  background: linear-gradient(180deg, #e9ecef 0%, #dee2e6 100%);
+  background: transparent;
   border-radius: 15px;
+  margin-left: -18px;
+  margin-right: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -181,7 +189,7 @@ body {
 .corridor-horizontal {
   grid-column: 3 / 5;
   grid-row: 2 / 3;
-  background: linear-gradient(90deg, #e9ecef 0%, #dee2e6 100%);
+  background: transparent;
   border-radius: 15px;
   display: flex;
   align-items: center;
@@ -190,14 +198,21 @@ body {
   font-style: italic;
 }
 
-/* Archives Room - Bottom Right Col 4 */
+/* staff Room - Bottom Right Col 4 */
 .room-card:nth-child(7) {
+  margin-bottom: -40px;
+  margin-top: -15px;
   grid-column: 1 / 2;
   grid-row: 2 / 4;
 }
 
+#room-archives {
+  margin-bottom: -5px;
+  margin-left: -20px;
+}
+
 .room-card {
-  background: white;
+  background: transparent;
   border-radius: 15px;
   padding: 20px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
@@ -207,8 +222,8 @@ body {
 }
 
 .room-card.required-empty {
-  border-color: #fecaca;
-  background: #fef2f2;
+  border-color: #fecaca39;
+  background: rgba(255, 0, 0, 0.118);
 }
 
 .room-header {
@@ -217,7 +232,6 @@ body {
   align-items: center;
   margin-bottom: 15px;
   padding-bottom: 12px;
-  border-bottom: 2px solid #e9ecef;
 }
 
 .room-header h3 {
