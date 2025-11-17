@@ -65,7 +65,6 @@ body {
 }
 
 .worker-card {
-  background: white;
   border-radius: 12px;
   padding: 15px;
   margin-bottom: 12px;
@@ -132,6 +131,7 @@ body {
 
 .workspace-grid {
   background: url(workspace.jpg) no-repeat center center/cover;
+  min-height: 650px;
   display: grid;
   grid-template-columns: 2fr 0.8fr 1fr 1fr;
   grid-template-rows: 1fr 0.8fr 1fr;
