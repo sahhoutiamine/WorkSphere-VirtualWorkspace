@@ -585,3 +585,20 @@ body {
   padding: 30px;
   font-style: italic;
 }
+@media (max-width: 700px) {
+  .container {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 2px solid #dee2e6;
+  }
+
+  .workspace-grid {
+    transform: rotate(90deg);
+    min-height: auto;
+    margin: 0;
+  }
+}
