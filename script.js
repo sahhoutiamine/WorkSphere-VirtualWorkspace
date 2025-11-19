@@ -1,8 +1,7 @@
-// script.js - Refactored
 let workers = [];
-let currentRoomForSelection = "";
+let currentRoom = "";
 
-const roomCapacity = {
+const roomSizes = {
   conference: 10,
   reception: 3,
   server: 5,
@@ -10,7 +9,8 @@ const roomCapacity = {
   staff: 15,
   archives: 5,
 };
-const roomRules = {
+
+const roomPermissions = {
   reception: ["Réceptionniste"],
   server: ["Technicien IT"],
   security: ["Agent de Sécurité"],
@@ -22,7 +22,8 @@ const roomRules = {
     "Employé",
   ],
 };
-const roomNames = {
+
+const roomTitles = {
   conference: "Salle de Conférence",
   reception: "Réception",
   server: "Salle des Serveurs",
@@ -30,7 +31,8 @@ const roomNames = {
   staff: "Salle du Personnel",
   archives: "Salle d'Archives",
 };
-const roleClasses = {
+
+const roleColors = {
   Réceptionniste: "role-receptionist",
   "Technicien IT": "role-it",
   "Agent de Sécurité": "role-security",
@@ -38,482 +40,606 @@ const roleClasses = {
   Nettoyage: "role-cleaning",
 };
 
-// Fetch workers data
-async function fetchWorkersData() {
+async function getWorkers() {
   try {
-    const response = await fetch("workers.json");
-    workers = response.ok ? (await response.json()).workers : [];
-  } catch (error) {
-    console.error("Error loading workers data:", error);
+    let response = await fetch("workers.json");
+    if (response.ok) {
+      let data = await response.json();
+      workers = data.workers;
+    } else {
+      workers = [];
+    }
+  } catch (err) {
+    console.log("Error loading workers:", err);
     workers = [];
   }
-  initializeApp();
+  startApp();
 }
 
-// Utility functions
-const getEl = (id) => document.getElementById(id);
-const getElValue = (id) => getEl(id).value.trim();
-const getRoleClass = (role) => roleClasses[role] || "role-default";
-const canAssignToRoom = (role, room) =>
-  ["conference", "staff"].includes(room) ||
-  (room === "archives" && role !== "Nettoyage") ||
-  role === "Manager" ||
-  !roomRules[room] ||
-  roomRules[room].includes(role);
+function getElement(id) {
+  return document.getElementById(id);
+}
 
-// Validation
-const validators = {
-  email: (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email),
-  phone: (phone) => /^\d{10}$/.test(phone.replace(/\s/g, "")),
-  dates: (startDate, endDate) => {
-    const start = new Date(startDate),
-      end = new Date(endDate),
-      today = new Date();
-    today.setHours(0, 0, 0, 0);
-    if (start < today)
-      return {
-        isValid: false,
-        message: "La date de début ne peut pas être dans le passé",
-      };
-    if (end < start)
-      return {
-        isValid: false,
-        message: "La date de fin ne peut pas être avant la date de début",
-      };
-    return { isValid: true };
-  },
-};
+function getValue(id) {
+  return getElement(id).value.trim();
+}
 
-function showError(elementOrId, message) {
-  const el = typeof elementOrId === "string" ? getEl(elementOrId) : elementOrId;
-  if (!el) return;
-  el.classList.add("error");
-  const existing = el.nextElementSibling;
-  if (existing?.classList.contains("error-message")) {
-    existing.textContent = message;
+function getRoleStyle(role) {
+  return roleColors[role] || "role-default";
+}
+
+function canWorkInRoom(role, room) {
+  if (room === "conference" || room === "staff") return true;
+  if (room === "archives" && role !== "Nettoyage") return true;
+  if (role === "Manager") return true;
+  if (!roomPermissions[room]) return true;
+  return roomPermissions[room].includes(role);
+}
+
+function isValidEmail(email) {
+  let pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return pattern.test(email);
+}
+
+function isValidPhone(phone) {
+  let numbers = phone.replace(/\s/g, "");
+  return /^\d{10}$/.test(numbers);
+}
+
+function checkDates(start, end) {
+  let startDate = new Date(start);
+  let endDate = new Date(end);
+
+  if (endDate < startDate) {
+    return {
+      ok: false,
+      msg: "La date de fin ne peut pas être avant la date de début",
+    };
+  }
+  return { ok: true };
+}
+
+function showError(input, message) {
+  let field = typeof input === "string" ? getElement(input) : input;
+  if (!field) return;
+
+  field.classList.add("error");
+
+  let nextElement = field.nextElementSibling;
+  if (nextElement && nextElement.classList.contains("error-msg")) {
+    nextElement.textContent = message;
     return;
   }
-  const errorEl = document.createElement("div");
-  errorEl.className = "error-message";
-  errorEl.textContent = message;
-  Object.assign(errorEl.style, {
-    color: "#e74c3c",
-    fontSize: "12px",
-    marginTop: "5px",
-  });
-  el.parentNode.insertBefore(errorEl, el.nextSibling);
+
+  let errorDiv = document.createElement("div");
+  errorDiv.className = "error-msg";
+  errorDiv.textContent = message;
+  errorDiv.style.color = "#e74c3c";
+  errorDiv.style.fontSize = "12px";
+  errorDiv.style.marginTop = "5px";
+
+  field.parentNode.insertBefore(errorDiv, field.nextSibling);
 }
 
-function clearError(elementOrId) {
-  const el = typeof elementOrId === "string" ? getEl(elementOrId) : elementOrId;
-  if (!el) return;
-  el.classList.remove("error");
-  const errorEl = el.nextElementSibling;
-  if (errorEl?.classList.contains("error-message")) errorEl.remove();
+function hideError(input) {
+  let field = typeof input === "string" ? getElement(input) : input;
+  if (!field) return;
+
+  field.classList.remove("error");
+  let nextElement = field.nextElementSibling;
+  if (nextElement && nextElement.classList.contains("error-msg")) {
+    nextElement.remove();
+  }
 }
 
-// Field validators with error handling
-const fieldValidators = {
-  workerName: (val) =>
-    val ? true : (showError("workerName", "Le nom complet est requis"), false),
-  workerRole: (val) =>
-    val
-      ? true
-      : (showError("workerRole", "Veuillez sélectionner un rôle"), false),
-  workerEmail: (val) => {
-    if (!val) return showError("workerEmail", "L'email est requis"), false;
-    if (!validators.email(val))
-      return showError("workerEmail", "Veuillez entrer un email valide"), false;
+const fieldChecks = {
+  workerName: function (value) {
+    if (!value) {
+      showError("workerName", "Le nom complet est requis");
+      return false;
+    }
     return true;
   },
-  workerPhone: (val) => {
-    if (!val) return showError("workerPhone", "Le téléphone est requis"), false;
-    if (!validators.phone(val))
-      return (
-        showError(
-          "workerPhone",
-          "Le téléphone doit contenir exactement 10 chiffres"
-        ),
-        false
+  workerRole: function (value) {
+    if (!value) {
+      showError("workerRole", "Veuillez sélectionner un rôle");
+      return false;
+    }
+    return true;
+  },
+  workerEmail: function (value) {
+    if (!value) {
+      showError("workerEmail", "L'email est requis");
+      return false;
+    }
+    if (!isValidEmail(value)) {
+      showError("workerEmail", "Veuillez entrer un email valide");
+      return false;
+    }
+    return true;
+  },
+  workerPhone: function (value) {
+    if (!value) {
+      showError("workerPhone", "Le téléphone est requis");
+      return false;
+    }
+    if (!isValidPhone(value)) {
+      showError(
+        "workerPhone",
+        "Le téléphone doit contenir exactement 10 chiffres"
       );
+      return false;
+    }
     return true;
   },
 };
 
-function validateField(field, value) {
-  clearError(field);
-  return fieldValidators[field] ? fieldValidators[field](value) : true;
+function checkField(fieldName, value) {
+  hideError(fieldName);
+  if (fieldChecks[fieldName]) {
+    return fieldChecks[fieldName](value);
+  }
+  return true;
 }
 
-function validateExperienceFields() {
-  const items = document.querySelectorAll(".experience-item");
-  if (items.length === 0)
-    return (
-      showError(
-        "experiencesList",
-        "Au moins une expérience professionnelle est requise"
-      ),
-      false
+function checkExperiences() {
+  let experienceItems = document.querySelectorAll(".experience-item");
+  if (experienceItems.length === 0) {
+    showError(
+      "experiencesList",
+      "Au moins une expérience professionnelle est requise"
     );
+    return false;
+  }
 
-  let isValid = true;
-  items.forEach((item) => {
-    const fields = {
-      title: item.querySelector(".exp-title"),
-      company: item.querySelector(".exp-company"),
-      startDate: item.querySelector(".exp-start-date"),
-      endDate: item.querySelector(".exp-end-date"),
-    };
+  let allGood = true;
 
-    Object.values(fields).forEach((f) => clearError(f));
+  experienceItems.forEach(function (item) {
+    let titleField = item.querySelector(".exp-title");
+    let companyField = item.querySelector(".exp-company");
+    let startField = item.querySelector(".exp-start-date");
+    let endField = item.querySelector(".exp-end-date");
 
-    if (!fields.title.value.trim()) {
-      showError(fields.title, "Le poste est requis");
-      isValid = false;
+    hideError(titleField);
+    hideError(companyField);
+    hideError(startField);
+    hideError(endField);
+
+    if (!titleField.value.trim()) {
+      showError(titleField, "Le poste est requis");
+      allGood = false;
     }
-    if (!fields.company.value.trim()) {
-      showError(fields.company, "L'entreprise est requise");
-      isValid = false;
+    if (!companyField.value.trim()) {
+      showError(companyField, "L'entreprise est requise");
+      allGood = false;
     }
-    if (!fields.startDate.value) {
-      showError(fields.startDate, "La date de début est requise");
-      isValid = false;
+    if (!startField.value) {
+      showError(startField, "La date de début est requise");
+      allGood = false;
     }
-    if (!fields.endDate.value) {
-      showError(fields.endDate, "La date de fin est requise");
-      isValid = false;
+    if (!endField.value) {
+      showError(endField, "La date de fin est requise");
+      allGood = false;
     }
 
-    if (fields.startDate.value && fields.endDate.value) {
-      const dateValidation = validators.dates(
-        fields.startDate.value,
-        fields.endDate.value
-      );
-      if (!dateValidation.isValid) {
-        showError(fields.startDate, dateValidation.message);
-        isValid = false;
+    if (startField.value && endField.value) {
+      let dateCheck = checkDates(startField.value, endField.value);
+      if (!dateCheck.ok) {
+        showError(startField, dateCheck.msg);
+        allGood = false;
       }
     }
   });
-  return isValid;
+
+  return allGood;
 }
 
-function validateForm() {
-  document.querySelectorAll(".error-message").forEach((el) => el.remove());
-  document
-    .querySelectorAll(".error")
-    .forEach((el) => el.classList.remove("error"));
+function checkAllFields() {
+  document.querySelectorAll(".error-msg").forEach(function (el) {
+    el.remove();
+  });
+  document.querySelectorAll(".error").forEach(function (el) {
+    el.classList.remove("error");
+  });
 
-  return ["workerName", "workerRole", "workerEmail", "workerPhone"]
-    .map((field) => validateField(field, getElValue(field)))
-    .concat(validateExperienceFields())
-    .every(Boolean);
+  let field1 = checkField("workerName", getValue("workerName"));
+  let field2 = checkField("workerRole", getValue("workerRole"));
+  let field3 = checkField("workerEmail", getValue("workerEmail"));
+  let field4 = checkField("workerPhone", getValue("workerPhone"));
+  let field5 = checkExperiences();
+
+  return field1 && field2 && field3 && field4 && field5;
 }
 
-// Modal management
-const modals = {
-  open: (modalId, callback) => {
-    getEl(modalId).classList.add("active");
-    if (callback) callback();
-  },
-  close: (modalId) => {
-    getEl(modalId).classList.remove("active");
-    if (modalId === "addWorkerModal") {
-      getEl("workerForm").reset();
-      getEl("photoPreview").style.display = "none";
-      getEl("experiencesList").innerHTML = "";
-      document.querySelectorAll(".error-message").forEach((el) => el.remove());
-      document
-        .querySelectorAll(".error")
-        .forEach((el) => el.classList.remove("error"));
-    }
-    if (modalId === "selectWorkerModal") currentRoomForSelection = "";
-  },
-};
+function openModal(modalId, doAfter) {
+  getElement(modalId).classList.add("active");
+  if (doAfter) doAfter();
+}
 
-// Experience management
-function addExperienceField() {
-  const list = getEl("experiencesList");
-  const isFirst = list.children.length === 0;
-  const expDiv = document.createElement("div");
-  expDiv.className = "experience-item";
-  expDiv.innerHTML = `
-    ${
-      !isFirst
-        ? '<button type="button" class="remove-experience-btn">✕</button>'
-        : ""
-    }
-    <div class="form-group"><label>Poste *</label><input type="text" class="exp-title" placeholder="Ex: Développeur Web" required></div>
-    <div class="form-group"><label>Entreprise *</label><input type="text" class="exp-company" placeholder="Ex: TechCorp" required></div>
-    <div class="form-group"><label>Période *</label><div class="date-period">
-      <div class="date-input-group"><label class="date-label">Début</label><input type="date" class="exp-start-date" required></div>
-      <div class="date-input-group"><label class="date-label">Fin</label><input type="date" class="exp-end-date" required></div>
-    </div></div>`;
-  list.appendChild(expDiv);
-
-  const today = new Date().toISOString().split("T")[0];
-  expDiv
-    .querySelectorAll('input[type="date"]')
-    .forEach((input) => (input.min = today));
-
-  expDiv
-    .querySelector(".remove-experience-btn")
-    ?.addEventListener("click", function () {
-      this.parentElement.remove();
-      validateExperienceFields();
+function closeModal(modalId) {
+  getElement(modalId).classList.remove("active");
+  if (modalId === "addWorkerModal") {
+    getElement("workerForm").reset();
+    getElement("photoPreview").style.display = "none";
+    getElement("experiencesList").innerHTML = "";
+    document.querySelectorAll(".error-msg").forEach(function (el) {
+      el.remove();
     });
+    document.querySelectorAll(".error").forEach(function (el) {
+      el.classList.remove("error");
+    });
+  }
+  if (modalId === "selectWorkerModal") {
+    currentRoom = "";
+  }
 }
 
-// Worker management
-function addWorker(e) {
-  e.preventDefault();
-  if (!validateForm()) return;
+function addExperience() {
+  let list = getElement("experiencesList");
+  let firstOne = list.children.length === 0;
+  let newExp = document.createElement("div");
+  newExp.className = "experience-item";
 
-  const experiences = Array.from(
-    document.querySelectorAll(".experience-item")
-  ).map((item) => {
-    const start = new Date(item.querySelector(".exp-start-date").value);
-    const end = new Date(item.querySelector(".exp-end-date").value);
-    return {
+  newExp.innerHTML =
+    (firstOne
+      ? ""
+      : '<button type="button" class="remove-exp-btn">✕</button>') +
+    '<div class="form-group"><label>Poste *</label><input type="text" class="exp-title" placeholder="Ex: Développeur Web" required></div>' +
+    '<div class="form-group"><label>Entreprise *</label><input type="text" class="exp-company" placeholder="Ex: TechCorp" required></div>' +
+    '<div class="form-group"><label>Période *</label><div class="date-period">' +
+    '<div class="date-input-group"><label class="date-label">Début</label><input type="date" class="exp-start-date" required></div>' +
+    '<div class="date-input-group"><label class="date-label">Fin</label><input type="date" class="exp-end-date" required></div>' +
+    "</div></div>";
+
+  list.appendChild(newExp);
+
+  let removeBtn = newExp.querySelector(".remove-exp-btn");
+  if (removeBtn) {
+    removeBtn.addEventListener("click", () => {
+      removeBtn.parentElement.remove();
+      checkExperiences();
+    });
+  }
+}
+
+function addNewWorker(e) {
+  e.preventDefault();
+  if (!checkAllFields()) return;
+
+  let experiences = [];
+  let experienceItems = document.querySelectorAll(".experience-item");
+
+  experienceItems.forEach(function (item) {
+    let startDate = new Date(item.querySelector(".exp-start-date").value);
+    let endDate = new Date(item.querySelector(".exp-end-date").value);
+
+    experiences.push({
       title: item.querySelector(".exp-title").value.trim(),
       company: item.querySelector(".exp-company").value.trim(),
       startDate: item.querySelector(".exp-start-date").value,
       endDate: item.querySelector(".exp-end-date").value,
-      period: `${start.toLocaleDateString("fr-FR")} - ${end.toLocaleDateString(
-        "fr-FR"
-      )}`,
-    };
+      period:
+        startDate.toLocaleDateString("fr-FR") +
+        " - " +
+        endDate.toLocaleDateString("fr-FR"),
+    });
   });
 
-  const name = getElValue("workerName");
-  workers.push({
+  let name = getValue("workerName");
+  let newWorker = {
     id: Date.now(),
-    name,
-    role: getEl("workerRole").value,
+    name: name,
+    role: getElement("workerRole").value,
     photo:
-      getElValue("workerPhoto") ||
-      `https://via.placeholder.com/150/667eea/ffffff?text=${name.charAt(0)}`,
-    email: getElValue("workerEmail"),
-    phone: getElValue("workerPhone"),
-    experiences,
+      getValue("workerPhoto") ||
+      "https://www.aljazeera.com/wp-content/uploads/2023/06/AP23171755115969-1687309761.jpg?resize=1200%2C675",
+    email: getValue("workerEmail"),
+    phone: getValue("workerPhone"),
+    experiences: experiences,
     room: null,
-  });
+  };
 
-  renderUnassigned();
-  modals.close("addWorkerModal");
+  workers.push(newWorker);
+  showUnassigned();
+  closeModal("addWorkerModal");
 }
 
-// Rendering
-function renderWorkerCard(w) {
-  return `<div class="worker-card" data-id="${w.id}">
-    <img src="${w.photo}" alt="${w.name}">
-    <div class="worker-info">
-      <h3>${w.name}</h3>
-      <p>${w.email}</p>
-      <span class="role-badge ${getRoleClass(w.role)}">${w.role}</span>
-    </div>
-  </div>`;
-}
-
-function renderUnassigned() {
-  const list = getEl("unassignedList");
-  const unassigned = workers.filter((w) => !w.room);
-  list.innerHTML =
-    unassigned.length === 0
-      ? '<div class="empty-state">Aucun employé non assigné</div>'
-      : unassigned.map(renderWorkerCard).join("");
-  list
-    .querySelectorAll(".worker-card")
-    .forEach((card) =>
-      card.addEventListener("click", () =>
-        showProfile(parseInt(card.dataset.id))
-      )
-    );
-}
-
-function renderRoom(room) {
-  const roomWorkers = workers.filter((w) => w.room === room);
-  getEl(`cap-${room}`).textContent = roomWorkers.length;
-  getEl(`workers-${room}`).innerHTML = roomWorkers
-    .map(
-      (w) =>
-        `<div class="room-worker">
-      <img src="${w.photo}" alt="${w.name}" data-id="${w.id}">
-      <div class="room-worker-info" data-id="${w.id}"><h4>${w.name}</h4><p>${w.role}</p></div>
-      <button class="remove-btn" data-id="${w.id}" title="Retirer">✕</button>
-    </div>`
-    )
-    .join("");
-
-  document
-    .querySelectorAll(
-      `#workers-${room} img, #workers-${room} .room-worker-info`
-    )
-    .forEach((el) =>
-      el.addEventListener("click", () => showProfile(parseInt(el.dataset.id)))
-    );
-  document
-    .querySelectorAll(`#workers-${room} .remove-btn`)
-    .forEach((btn) =>
-      btn.addEventListener("click", () =>
-        removeFromRoom(parseInt(btn.dataset.id))
-      )
-    );
-
-  updateRoomStatus(room);
-}
-
-function updateRoomStatus(room) {
-  const card = getEl(`room-${room}`);
-  const needsStaff = roomRules[room] && !["conference", "staff"].includes(room);
-  card.classList.toggle(
-    "required-empty",
-    needsStaff && !workers.some((w) => w.room === room)
+function makeWorkerCard(worker) {
+  return (
+    '<div class="worker-card" data-id="' +
+    worker.id +
+    '">' +
+    '<img src="' +
+    worker.photo +
+    '" alt="' +
+    worker.name +
+    '">' +
+    '<div class="worker-info">' +
+    "<h3>" +
+    worker.name +
+    "</h3>" +
+    "<p>" +
+    worker.email +
+    "</p>" +
+    '<span class="role-badge ' +
+    getRoleStyle(worker.role) +
+    '">' +
+    worker.role +
+    "</span>" +
+    "</div>" +
+    "</div>"
   );
 }
 
-function removeFromRoom(workerId) {
-  const worker = workers.find((w) => w.id === workerId);
-  if (worker) {
-    const oldRoom = worker.room;
-    worker.room = null;
-    renderUnassigned();
-    if (oldRoom) renderRoom(oldRoom);
+function showUnassigned() {
+  let list = getElement("unassignedList");
+  let noRoomWorkers = workers.filter(function (w) {
+    return !w.room;
+  });
+
+  if (noRoomWorkers.length === 0) {
+    list.innerHTML = '<div class="empty-state">Aucun employé non assigné</div>';
+  } else {
+    list.innerHTML = noRoomWorkers.map(makeWorkerCard).join("");
+  }
+
+  list.querySelectorAll(".worker-card").forEach((card) => {
+    card.addEventListener("click", () => {
+      showWorkerProfile(parseInt(card.getAttribute("data-id")));
+    });
+  });
+}
+
+function showRoom(room) {
+  let roomWorkers = workers.filter(function (w) {
+    return w.room === room;
+  });
+  getElement("cap-" + room).textContent = roomWorkers.length;
+
+  let workersContainer = getElement("workers-" + room);
+  workersContainer.innerHTML = "";
+
+  roomWorkers.forEach(function (worker) {
+    let workerDiv = document.createElement("div");
+    workerDiv.className = "room-worker";
+    workerDiv.innerHTML =
+      '<img src="' +
+      worker.photo +
+      '" alt="' +
+      worker.name +
+      '" data-id="' +
+      worker.id +
+      '">' +
+      '<div class="room-worker-info" data-id="' +
+      worker.id +
+      '"><h4>' +
+      worker.name +
+      "</h4><p>" +
+      worker.role +
+      "</p></div>" +
+      '<button class="remove-btn" data-id="' +
+      worker.id +
+      '" title="Retirer">✕</button>';
+
+    workersContainer.appendChild(workerDiv);
+  });
+
+  document
+    .querySelectorAll(
+      "#workers-" + room + " img, #workers-" + room + " .room-worker-info"
+    )
+    .forEach((el) => {
+      el.addEventListener("click", () => {
+        showWorkerProfile(parseInt(el.getAttribute("data-id")));
+      });
+    });
+
+  document
+    .querySelectorAll("#workers-" + room + " .remove-btn")
+    .forEach((btn) => {
+      btn.addEventListener("click", () => {
+        removeWorkerFromRoom(parseInt(btn.getAttribute("data-id")));
+      });
+    });
+
+  updateRoomDisplay(room);
+}
+
+function updateRoomDisplay(room) {
+  let card = getElement("room-" + room);
+  let needsSpecificRole =
+    roomPermissions[room] && room !== "conference" && room !== "staff";
+
+  if (needsSpecificRole) {
+    let hasRequiredWorker = workers.some(function (w) {
+      return w.room === room;
+    });
+    if (hasRequiredWorker) {
+      card.classList.remove("required-empty");
+    } else {
+      card.classList.add("required-empty");
+    }
   }
 }
 
-function assignToRoom(workerId, room) {
-  const worker = workers.find((w) => w.id === workerId);
+function removeWorkerFromRoom(workerId) {
+  let worker = workers.find(function (w) {
+    return w.id === workerId;
+  });
+  if (worker) {
+    let previousRoom = worker.room;
+    worker.room = null;
+    showUnassigned();
+    if (previousRoom) showRoom(previousRoom);
+  }
+}
+
+function putWorkerInRoom(workerId, room) {
+  let worker = workers.find(function (w) {
+    return w.id === workerId;
+  });
   if (!worker) return;
 
-  const currentCount = workers.filter((w) => w.room === room).length;
-  if (currentCount >= roomCapacity[room]) {
+  let currentWorkerCount = workers.filter(function (w) {
+    return w.room === room;
+  }).length;
+  if (currentWorkerCount >= roomSizes[room]) {
     alert("Cette zone a atteint sa capacité maximale");
     return;
   }
 
   worker.room = room;
-  renderUnassigned();
-  renderRoom(room);
-  modals.close("selectWorkerModal");
+  showUnassigned();
+  showRoom(room);
+  closeModal("selectWorkerModal");
 }
 
-function openSelectWorkerModal(room) {
-  const currentCount = workers.filter((w) => w.room === room).length;
-  if (currentCount >= roomCapacity[room]) {
+function openWorkerSelection(room) {
+  let currentWorkerCount = workers.filter(function (w) {
+    return w.room === room;
+  }).length;
+  if (currentWorkerCount >= roomSizes[room]) {
     alert("Cette zone a atteint sa capacité maximale");
     return;
   }
 
-  currentRoomForSelection = room;
-  const eligible = workers.filter(
-    (w) => !w.room && canAssignToRoom(w.role, room)
-  );
-  const list = getEl("workerSelectList");
+  currentRoom = room;
+  let availableWorkers = workers.filter(function (w) {
+    return !w.room && canWorkInRoom(w.role, room);
+  });
 
-  list.innerHTML =
-    eligible.length === 0
-      ? '<div class="empty-state">Aucun employé éligible pour cette zone</div>'
-      : eligible.map(renderWorkerCard).join("");
+  let list = getElement("workerSelectList");
 
-  list
-    .querySelectorAll(".worker-card")
-    .forEach((card) =>
-      card.addEventListener("click", () =>
-        assignToRoom(parseInt(card.dataset.id), room)
-      )
-    );
+  if (availableWorkers.length === 0) {
+    list.innerHTML =
+      '<div class="empty-state">Aucun employé éligible pour cette zone</div>';
+  } else {
+    list.innerHTML = availableWorkers.map(makeWorkerCard).join("");
+  }
 
-  modals.open("selectWorkerModal");
+  list.querySelectorAll(".worker-card").forEach((card) => {
+    card.addEventListener("click", () => {
+      putWorkerInRoom(parseInt(card.getAttribute("data-id")), room);
+    });
+  });
+
+  openModal("selectWorkerModal");
 }
 
-function showProfile(workerId) {
-  const worker = workers.find((w) => w.id === workerId);
+function showWorkerProfile(workerId) {
+  let worker = workers.find(function (w) {
+    return w.id === workerId;
+  });
   if (!worker) return;
 
-  const experiencesHTML =
-    worker.experiences.length > 0
-      ? worker.experiences
-          .map(
-            (exp) =>
-              `<div class="info-row"><div class="info-label">${exp.title}</div>
-        <div class="info-value">${exp.company} (${exp.period})</div></div>`
-          )
-          .join("")
-      : '<div class="info-row"><div class="info-value">Aucune expérience renseignée</div></div>';
+  let experiencesHTML = "";
+  if (worker.experiences.length > 0) {
+    worker.experiences.forEach(function (exp) {
+      experiencesHTML +=
+        '<div class="info-row"><div class="info-label">' +
+        exp.title +
+        "</div>" +
+        '<div class="info-value">' +
+        exp.company +
+        " (" +
+        exp.period +
+        ")</div></div>";
+    });
+  } else {
+    experiencesHTML =
+      '<div class="info-row"><div class="info-value">Aucune expérience renseignée</div></div>';
+  }
 
-  getEl("profileContent").innerHTML = `
-    <div class="profile-header">
-      <img src="${worker.photo}" alt="${worker.name}"><h2>${worker.name}</h2>
-      <span class="role-badge ${getRoleClass(
-        worker.role
-      )}" style="font-size: 14px; padding: 8px 16px;">${worker.role}</span>
-    </div>
-    <div class="profile-info">
-      <div class="info-row"><div class="info-label">Email</div><div class="info-value">${
-        worker.email
-      }</div></div>
-      <div class="info-row"><div class="info-label">Téléphone</div><div class="info-value">${
-        worker.phone
-      }</div></div>
-      <div class="info-row"><div class="info-label">Localisation</div>
-        <div class="info-value">${
-          worker.room ? roomNames[worker.room] : "Non assigné"
-        }</div></div>
-    </div>
-    <div class="profile-info">
-      <h3 style="margin-bottom: 15px; color: #495057;">Expériences Professionnelles</h3>
-      ${experiencesHTML}
-    </div>`;
+  getElement("profileContent").innerHTML =
+    '<div class="profile-header">' +
+    '<img src="' +
+    worker.photo +
+    '" alt="' +
+    worker.name +
+    '"><h2>' +
+    worker.name +
+    "</h2>" +
+    '<span class="role-badge ' +
+    getRoleStyle(worker.role) +
+    '" style="font-size: 14px; padding: 8px 16px;">' +
+    worker.role +
+    "</span>" +
+    "</div>" +
+    '<div class="profile-info">' +
+    '<div class="info-row"><div class="info-label">Email</div><div class="info-value">' +
+    worker.email +
+    "</div></div>" +
+    '<div class="info-row"><div class="info-label">Téléphone</div><div class="info-value">' +
+    worker.phone +
+    "</div></div>" +
+    '<div class="info-row"><div class="info-label">Localisation</div>' +
+    '<div class="info-value">' +
+    (worker.room ? roomTitles[worker.room] : "Non assigné") +
+    "</div></div>" +
+    "</div>" +
+    '<div class="profile-info">' +
+    '<h3 style="margin-bottom: 15px; color: #495057;">Expériences Professionnelles</h3>' +
+    experiencesHTML +
+    "</div>";
 
-  modals.open("profileModal");
+  openModal("profileModal");
 }
 
-// Event listeners
-function setupEventListeners() {
-  getEl("addWorkerBtn").addEventListener("click", () =>
-    modals.open("addWorkerModal", addExperienceField)
-  );
-  ["addWorkerModal", "profileModal", "selectWorkerModal"].forEach((modal) =>
-    getEl(
-      `close${
-        modal.charAt(0).toUpperCase() + modal.slice(1).replace("Modal", "Modal")
-      }`
-    ).addEventListener("click", () => modals.close(modal))
-  );
-  getEl("workerForm").addEventListener("submit", addWorker);
-  getEl("workerPhoto").addEventListener("change", function () {
-    const preview = getEl("photoPreview");
-    preview.src = this.value;
-    preview.style.display = this.value ? "block" : "none";
+function setupEvents() {
+  getElement("addWorkerBtn").addEventListener("click", () => {
+    openModal("addWorkerModal", addExperience);
   });
-  getEl("addExperienceBtn").addEventListener("click", addExperienceField);
 
   document
-    .querySelectorAll(".add-to-room-btn")
-    .forEach((btn) =>
-      btn.addEventListener("click", () =>
-        openSelectWorkerModal(btn.dataset.room)
-      )
-    );
+    .getElementById("closeAddWorkerModal")
+    .addEventListener("click", () => {
+      closeModal("addWorkerModal");
+    });
+  document.getElementById("closeProfileModal").addEventListener("click", () => {
+    closeModal("profileModal");
+  });
+  document
+    .getElementById("closeSelectWorkerModal")
+    .addEventListener("click", () => {
+      closeModal("selectWorkerModal");
+    });
 
-  ["workerName", "workerRole", "workerEmail", "workerPhone"].forEach((field) =>
-    getEl(field).addEventListener("blur", function () {
-      validateField(field, this.value.trim());
-    })
+  getElement("workerForm").addEventListener("submit", addNewWorker);
+
+  getElement("workerPhoto").addEventListener("change", () => {
+    let preview = getElement("photoPreview");
+    preview.src = getElement("workerPhoto").value;
+    preview.style.display = getElement("workerPhoto").value ? "block" : "none";
+  });
+
+  getElement("addExperienceBtn").addEventListener("click", addExperience);
+
+  document.querySelectorAll(".add-to-room-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      openWorkerSelection(btn.getAttribute("data-room"));
+    });
+  });
+
+  ["workerName", "workerRole", "workerEmail", "workerPhone"].forEach(
+    (field) => {
+      getElement(field).addEventListener("blur", () => {
+        checkField(field, getElement(field).value.trim());
+      });
+    }
   );
 
-  document.querySelectorAll(".modal").forEach((modal) =>
+  document.querySelectorAll(".modal").forEach((modal) => {
     modal.addEventListener("click", (e) => {
-      if (e.target === modal) modals.close(modal.id);
-    })
-  );
+      if (e.target === modal) {
+        closeModal(modal.id);
+      }
+    });
+  });
 }
 
-// Initialize
-function initializeApp() {
-  setupEventListeners();
-  renderUnassigned();
+function startApp() {
+  setupEvents();
+  showUnassigned();
   [
     "conference",
     "reception",
@@ -521,7 +647,9 @@ function initializeApp() {
     "security",
     "staff",
     "archives",
-  ].forEach(renderRoom);
+  ].forEach(function (room) {
+    showRoom(room);
+  });
 }
 
-fetchWorkersData();
+getWorkers();
