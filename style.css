@@ -66,6 +66,68 @@ body {
   box-shadow: 0 0.375rem 1.25rem rgba(16, 185, 129, 0.4);
 }
 
+/* Styles pour la validation et les dates */
+.error {
+  border-color: #e74c3c !important;
+}
+
+.error-message {
+  color: #e74c3c;
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+.date-period {
+  display: flex;
+  gap: 15px;
+}
+
+.date-input-group {
+  flex: 1;
+}
+
+.date-label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 14px;
+  color: #555;
+}
+
+.experience-item {
+  position: relative;
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  border: 1px solid #e9ecef;
+}
+
+.remove-experience-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 25px;
+  height: 25px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.remove-experience-btn:hover {
+  background: #c0392b;
+}
+
+.date-period input[type="date"] {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
 .worker-card {
   border-radius: 0.75rem;
   padding: 0.9375rem;

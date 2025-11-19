@@ -91,6 +91,168 @@ function setupEventListeners() {
       }
     });
   });
+
+  // Setup blur event validation
+  setupBlurValidation();
+}
+
+// Setup blur event validation for form fields
+function setupBlurValidation() {
+  // Name field
+  document.getElementById("workerName").addEventListener("blur", function () {
+    validateNameField(this.value.trim());
+  });
+
+  // Role field
+  document.getElementById("workerRole").addEventListener("blur", function () {
+    validateRoleField(this.value);
+  });
+
+  // Email field
+  document.getElementById("workerEmail").addEventListener("blur", function () {
+    validateEmailField(this.value.trim());
+  });
+
+  // Phone field
+  document.getElementById("workerPhone").addEventListener("blur", function () {
+    validatePhoneField(this.value.trim());
+  });
+
+  // Experience fields (will be handled dynamically when added)
+}
+
+// Individual field validation functions for blur events
+function validateNameField(name) {
+  clearError("workerName");
+  if (!name) {
+    showError("workerName", "Le nom complet est requis");
+    return false;
+  }
+  return true;
+}
+
+function validateRoleField(role) {
+  clearError("workerRole");
+  if (!role) {
+    showError("workerRole", "Veuillez sélectionner un rôle");
+    return false;
+  }
+  return true;
+}
+
+function validateEmailField(email) {
+  clearError("workerEmail");
+  if (!email) {
+    showError("workerEmail", "L'email est requis");
+    return false;
+  } else if (!validateEmail(email)) {
+    showError("workerEmail", "Veuillez entrer un email valide");
+    return false;
+  }
+  return true;
+}
+
+function validatePhoneField(phone) {
+  clearError("workerPhone");
+  if (!phone) {
+    showError("workerPhone", "Le téléphone est requis");
+    return false;
+  } else if (!validatePhone(phone)) {
+    showError(
+      "workerPhone",
+      "Le téléphone doit contenir exactement 10 chiffres"
+    );
+    return false;
+  }
+  return true;
+}
+
+function validateExperienceFields() {
+  let isValid = true;
+  const experienceItems = document.querySelectorAll(".experience-item");
+
+  if (experienceItems.length === 0) {
+    showError(
+      "experiencesList",
+      "Au moins une expérience professionnelle est requise"
+    );
+    isValid = false;
+  } else {
+    experienceItems.forEach((item, index) => {
+      const title = item.querySelector(".exp-title").value.trim();
+      const company = item.querySelector(".exp-company").value.trim();
+      const startDate = item.querySelector(".exp-start-date").value;
+      const endDate = item.querySelector(".exp-end-date").value;
+
+      // Clear previous errors for this item
+      clearError(item.querySelector(".exp-title"));
+      clearError(item.querySelector(".exp-company"));
+      clearError(item.querySelector(".exp-start-date"));
+      clearError(item.querySelector(".exp-end-date"));
+
+      if (!title) {
+        showError(item.querySelector(".exp-title"), "Le poste est requis");
+        isValid = false;
+      }
+
+      if (!company) {
+        showError(
+          item.querySelector(".exp-company"),
+          "L'entreprise est requise"
+        );
+        isValid = false;
+      }
+
+      if (!startDate) {
+        showError(
+          item.querySelector(".exp-start-date"),
+          "La date de début est requise"
+        );
+        isValid = false;
+      }
+
+      if (!endDate) {
+        showError(
+          item.querySelector(".exp-end-date"),
+          "La date de fin est requise"
+        );
+        isValid = false;
+      }
+
+      if (startDate && endDate) {
+        const dateValidation = validateDates(startDate, endDate);
+        if (!dateValidation.isValid) {
+          showError(
+            item.querySelector(".exp-start-date"),
+            dateValidation.message
+          );
+          isValid = false;
+        }
+      }
+    });
+  }
+
+  return isValid;
+}
+
+// Clear error for a specific field
+function clearError(elementOrId) {
+  let element;
+  if (typeof elementOrId === "string") {
+    element = document.getElementById(elementOrId);
+  } else {
+    element = elementOrId;
+  }
+
+  if (!element) return;
+
+  element.classList.remove("error");
+
+  // Remove error message
+  const errorElement = element.nextElementSibling;
+  if (errorElement && errorElement.classList.contains("error-message")) {
+    errorElement.remove();
+  }
 }
 
 function getRoleClass(role) {
@@ -116,6 +278,8 @@ function canAssignToRoom(role, room) {
 
 function openAddWorkerModal() {
   document.getElementById("addWorkerModal").classList.add("active");
+  // Add one experience field by default
+  addExperienceField();
 }
 
 function closeAddWorkerModal() {
@@ -123,6 +287,12 @@ function closeAddWorkerModal() {
   document.getElementById("workerForm").reset();
   document.getElementById("photoPreview").style.display = "none";
   document.getElementById("experiencesList").innerHTML = "";
+
+  // Clear all errors when closing modal
+  document.querySelectorAll(".error-message").forEach((el) => el.remove());
+  document
+    .querySelectorAll(".error")
+    .forEach((el) => el.classList.remove("error"));
 }
 
 function previewPhoto() {
@@ -142,21 +312,57 @@ function addExperienceField() {
   const expDiv = document.createElement("div");
   expDiv.className = "experience-item";
   expDiv.innerHTML = `
-                <button type="button" class="remove-experience-btn">✕</button>
-                <div class="form-group">
-                    <label>Poste</label>
-                    <input type="text" class="exp-title" placeholder="Ex: Développeur Web">
-                </div>
-                <div class="form-group">
-                    <label>Entreprise</label>
-                    <input type="text" class="exp-company" placeholder="Ex: TechCorp">
-                </div>
-                <div class="form-group">
-                    <label>Période</label>
-                    <input type="text" class="exp-period" placeholder="Ex: 2020-2023">
-                </div>
-            `;
+    <button type="button" class="remove-experience-btn">✕</button>
+    <div class="form-group">
+      <label>Poste *</label>
+      <input type="text" class="exp-title" placeholder="Ex: Développeur Web" required>
+    </div>
+    <div class="form-group">
+      <label>Entreprise *</label>
+      <input type="text" class="exp-company" placeholder="Ex: TechCorp" required>
+    </div>
+    <div class="form-group">
+      <label>Période *</label>
+      <div class="date-period">
+        <div class="date-input-group">
+          <label class="date-label">Début</label>
+          <input type="date" class="exp-start-date" required>
+        </div>
+        <div class="date-input-group">
+          <label class="date-label">Fin</label>
+          <input type="date" class="exp-end-date" required>
+        </div>
+      </div>
+    </div>
+  `;
   list.appendChild(expDiv);
+
+  // Set min date for both date inputs to today
+  const today = new Date().toISOString().split("T")[0];
+  expDiv.querySelector(".exp-start-date").min = today;
+  expDiv.querySelector(".exp-end-date").min = today;
+
+  // Add blur event listeners for experience fields
+  const titleInput = expDiv.querySelector(".exp-title");
+  const companyInput = expDiv.querySelector(".exp-company");
+  const startDateInput = expDiv.querySelector(".exp-start-date");
+  const endDateInput = expDiv.querySelector(".exp-end-date");
+
+  titleInput.addEventListener("blur", function () {
+    validateExperienceTitle(this.value.trim());
+  });
+
+  companyInput.addEventListener("blur", function () {
+    validateExperienceCompany(this.value.trim());
+  });
+
+  startDateInput.addEventListener("blur", function () {
+    validateExperienceDates();
+  });
+
+  endDateInput.addEventListener("blur", function () {
+    validateExperienceDates();
+  });
 
   // Add event listener to the new remove button
   expDiv
@@ -166,33 +372,190 @@ function addExperienceField() {
     });
 }
 
+// Individual experience field validation
+function validateExperienceTitle(title) {
+  if (!title) {
+    showError(event.target, "Le poste est requis");
+    return false;
+  }
+  clearError(event.target);
+  return true;
+}
+
+function validateExperienceCompany(company) {
+  if (!company) {
+    showError(event.target, "L'entreprise est requise");
+    return false;
+  }
+  clearError(event.target);
+  return true;
+}
+
+function validateExperienceDates() {
+  const experienceItems = document.querySelectorAll(".experience-item");
+  experienceItems.forEach((item) => {
+    const startDate = item.querySelector(".exp-start-date").value;
+    const endDate = item.querySelector(".exp-end-date").value;
+
+    clearError(item.querySelector(".exp-start-date"));
+    clearError(item.querySelector(".exp-end-date"));
+
+    if (startDate && endDate) {
+      const dateValidation = validateDates(startDate, endDate);
+      if (!dateValidation.isValid) {
+        showError(
+          item.querySelector(".exp-start-date"),
+          dateValidation.message
+        );
+        return false;
+      }
+    }
+    return true;
+  });
+}
+
 function removeExperience(btn) {
   btn.parentElement.remove();
+  // Re-validate experiences after removal
+  validateExperienceFields();
+}
+
+// Validation functions
+function validateEmail(email) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
+
+function validatePhone(phone) {
+  const phoneRegex = /^\d{10}$/;
+  return phoneRegex.test(phone.replace(/\s/g, ""));
+}
+
+function validateDates(startDate, endDate) {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  if (start < today) {
+    return {
+      isValid: false,
+      message: "La date de début ne peut pas être dans le passé",
+    };
+  }
+
+  if (end < start) {
+    return {
+      isValid: false,
+      message: "La date de fin ne peut pas être avant la date de début",
+    };
+  }
+
+  return { isValid: true };
+}
+
+function validateForm() {
+  // Reset previous error states
+  document.querySelectorAll(".error-message").forEach((el) => el.remove());
+  document
+    .querySelectorAll(".error")
+    .forEach((el) => el.classList.remove("error"));
+
+  let isValid = true;
+
+  // Validate name
+  const name = document.getElementById("workerName").value.trim();
+  if (!validateNameField(name)) isValid = false;
+
+  // Validate role
+  const role = document.getElementById("workerRole").value;
+  if (!validateRoleField(role)) isValid = false;
+
+  // Validate email
+  const email = document.getElementById("workerEmail").value.trim();
+  if (!validateEmailField(email)) isValid = false;
+
+  // Validate phone
+  const phone = document.getElementById("workerPhone").value.trim();
+  if (!validatePhoneField(phone)) isValid = false;
+
+  // Validate experiences
+  if (!validateExperienceFields()) isValid = false;
+
+  return isValid;
+}
+
+function showError(elementOrId, message) {
+  let element;
+  if (typeof elementOrId === "string") {
+    element = document.getElementById(elementOrId);
+  } else {
+    element = elementOrId;
+  }
+
+  if (!element) return;
+
+  element.classList.add("error");
+
+  // Check if error message already exists
+  const existingError = element.nextElementSibling;
+  if (existingError && existingError.classList.contains("error-message")) {
+    existingError.textContent = message;
+    return;
+  }
+
+  const errorElement = document.createElement("div");
+  errorElement.className = "error-message";
+  errorElement.textContent = message;
+  errorElement.style.color = "#e74c3c";
+  errorElement.style.fontSize = "12px";
+  errorElement.style.marginTop = "5px";
+
+  // Insert after the input element
+  element.parentNode.insertBefore(errorElement, element.nextSibling);
 }
 
 function addWorker(e) {
   e.preventDefault();
 
+  if (!validateForm()) {
+    return;
+  }
+
   const experiences = [];
   document.querySelectorAll(".experience-item").forEach((item) => {
-    const title = item.querySelector(".exp-title").value;
-    const company = item.querySelector(".exp-company").value;
-    const period = item.querySelector(".exp-period").value;
-    if (title || company || period) {
-      experiences.push({ title, company, period });
+    const title = item.querySelector(".exp-title").value.trim();
+    const company = item.querySelector(".exp-company").value.trim();
+    const startDate = item.querySelector(".exp-start-date").value;
+    const endDate = item.querySelector(".exp-end-date").value;
+
+    if (title && company && startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      const period = `${start.toLocaleDateString(
+        "fr-FR"
+      )} - ${end.toLocaleDateString("fr-FR")}`;
+
+      experiences.push({
+        title,
+        company,
+        startDate: startDate,
+        endDate: endDate,
+        period,
+      });
     }
   });
 
   const worker = {
     id: Date.now(),
-    name: document.getElementById("workerName").value,
+    name: document.getElementById("workerName").value.trim(),
     role: document.getElementById("workerRole").value,
     photo:
       document.getElementById("workerPhoto").value ||
       "https://via.placeholder.com/150/667eea/ffffff?text=" +
         document.getElementById("workerName").value.charAt(0),
-    email: document.getElementById("workerEmail").value,
-    phone: document.getElementById("workerPhone").value,
+    email: document.getElementById("workerEmail").value.trim(),
+    phone: document.getElementById("workerPhone").value.trim(),
     experiences: experiences,
     room: null,
   };
