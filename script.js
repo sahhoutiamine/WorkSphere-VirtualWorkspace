@@ -311,8 +311,15 @@ function addExperienceField() {
   const index = list.children.length;
   const expDiv = document.createElement("div");
   expDiv.className = "experience-item";
+
+  // Only show remove button if it's not the first experience item
+  const removeButtonHtml =
+    list.children.length === 0
+      ? ""
+      : '<button type="button" class="remove-experience-btn">✕</button>';
+
   expDiv.innerHTML = `
-    <button type="button" class="remove-experience-btn">✕</button>
+    ${removeButtonHtml}
     <div class="form-group">
       <label>Poste *</label>
       <input type="text" class="exp-title" placeholder="Ex: Développeur Web" required>
@@ -364,12 +371,13 @@ function addExperienceField() {
     validateExperienceDates();
   });
 
-  // Add event listener to the new remove button
-  expDiv
-    .querySelector(".remove-experience-btn")
-    .addEventListener("click", function () {
+  // Add event listener to the remove button only if it exists
+  const removeBtn = expDiv.querySelector(".remove-experience-btn");
+  if (removeBtn) {
+    removeBtn.addEventListener("click", function () {
       removeExperience(this);
     });
+  }
 }
 
 // Individual experience field validation
