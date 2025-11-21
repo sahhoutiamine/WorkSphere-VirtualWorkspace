@@ -240,7 +240,16 @@ body {
 }
 
 /* Reception - Top Right Col 3 */
-.room-card:nth-child(2) {
+/* .room-card:nth-child(2) {
+  margin-left: -3rem;
+  margin-right: 1rem;
+  grid-column: 3 / 4;
+  grid-row: 1 / 2;
+  overflow: scroll;
+} */
+
+/* Reception - Top Right Col 3 */
+#room-archives {
   margin-left: -3rem;
   margin-right: 1rem;
   grid-column: 3 / 4;
@@ -249,7 +258,13 @@ body {
 }
 
 /* Server Room - Top Right Col 4 */
-.room-card:nth-child(3) {
+/* .room-card:nth-child(3) {
+  margin-left: -2rem;
+  grid-column: 4 / 5;
+  grid-row: 1 / 2;
+  overflow: scroll;
+} */
+.room-card:nth-child(4) {
   margin-left: -2rem;
   grid-column: 4 / 5;
   grid-row: 1 / 2;
@@ -257,7 +272,16 @@ body {
 }
 
 /* Security Room - Bottom Right Col 3 */
-.room-card:nth-child(4) {
+/* .room-card:nth-child(4) {
+  margin-left: -3.1rem;
+  margin-right: 1.2rem;
+  margin-top: 0.3rem;
+  margin-bottom: 0;
+  grid-column: 3 / 4;
+  grid-row: 3 / 4;
+  overflow: scroll;
+} */
+.room-card:nth-child(7) {
   margin-left: -3.1rem;
   margin-right: 1.2rem;
   margin-top: 0.3rem;
@@ -297,15 +321,28 @@ body {
   font-style: italic;
 }
 
-.room-card:nth-child(7) {
+/* .room-card:nth-child(7) {
+  margin-top: -1rem;
+  margin-right: 1rem;
+  grid-column: 1 / 2;
+  grid-row: 2 / 4;
+  overflow: scroll;
+} */
+.room-card:nth-child(2) {
   margin-top: -1rem;
   margin-right: 1rem;
   grid-column: 1 / 2;
   grid-row: 2 / 4;
   overflow: scroll;
 }
-
+/* 
 #room-archives {
+  margin-bottom: -0.3rem;
+  margin-left: -2.5rem;
+  overflow: scroll;
+} */
+
+.room-card:nth-child(3) {
   margin-bottom: -0.3rem;
   margin-left: -2.5rem;
   overflow: scroll;
