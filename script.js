@@ -166,3 +166,48 @@ document.getElementById("addWorkerBtn").addEventListener("click", () => {
 document.getElementById("closeAddWorkerModal").addEventListener("click", () => {
   document.getElementById("addWorkerModal").style.display = "none";
 });
+
+document.querySelectorAll("input").forEach((input) => {
+  input.addEventListener("blur", () => {
+    if (input.value.trim() === "") {
+      showError(input, "Ce champ est requis.");
+    }
+  });
+});
+document.querySelectorAll("input").forEach((input) => {
+  input.addEventListener("focus", () => {
+    hideError(input);
+  });
+});
+
+function showError(input, message) {
+  let field = typeof input === "string" ? getElement(input) : input;
+  if (!field) return;
+
+  field.classList.add("error");
+
+  let nextElement = field.nextElementSibling;
+  if (nextElement && nextElement.classList.contains("error-msg")) {
+    nextElement.textContent = message;
+    return;
+  }
+
+  let errorDiv = document.createElement("div");
+  errorDiv.className = "error-msg";
+  errorDiv.textContent = message;
+  errorDiv.style.color = "#e74c3c";
+  errorDiv.style.fontSize = "12px";
+  errorDiv.style.marginTop = "5px";
+
+  field.parentNode.insertBefore(errorDiv, field.nextSibling);
+}
+function hideError(input) {
+  let field = typeof input === "string" ? getElement(input) : input;
+  if (!field) return;
+
+  field.classList.remove("error");
+  let nextElement = field.nextElementSibling;
+  if (nextElement && nextElement.classList.contains("error-msg")) {
+    nextElement.remove();
+  }
+}
