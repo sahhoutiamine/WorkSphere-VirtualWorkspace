@@ -151,7 +151,54 @@
           </div>
           <div class="experiences-section">
             <h3 style="margin-bottom: 15px">Expériences Professionnelles</h3>
-            <div id="experiencesList"></div>
+            <div id="experiencesList">
+              <div class="form-group">
+                <label>Poste *</label>
+                <input
+                  id="posteInput"
+                  type="text"
+                  class="exp-title"
+                  placeholder="Ex: Développeur Web"
+                  required
+                />
+              </div>
+
+              <div class="form-group">
+                <label>Entreprise *</label>
+                <input
+                  id="entrepriseInput"
+                  type="text"
+                  class="exp-company"
+                  placeholder="Ex: TechCorp"
+                  required
+                />
+              </div>
+
+              <div class="form-group">
+                <label>Période *</label>
+                <div class="date-period">
+                  <div class="date-input-group">
+                    <label class="date-label">Début</label>
+                    <input
+                      id="startDate"
+                      type="date"
+                      class="exp-start-date"
+                      required
+                    />
+                  </div>
+
+                  <div class="date-input-group">
+                    <label class="date-label">Fin</label>
+                    <input
+                      id="endDate"
+                      type="date"
+                      class="exp-end-date"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
             <button
               type="button"
               class="add-experience-btn"

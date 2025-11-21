@@ -141,6 +141,19 @@ function isValidPhone(phone) {
   return /^\d{10}$/.test(numbers);
 }
 
+function checkDates(start, end) {
+  let startDate = new Date(start);
+  let endDate = new Date(end);
+
+  if (endDate < startDate) {
+    return {
+      ok: false,
+      msg: "La date de fin ne peut pas être avant la date de début",
+    };
+  }
+  return { ok: true };
+}
+
 let workersList = workers.workers;
 const unassignedList = document.getElementById("unassignedList");
 
@@ -180,13 +193,31 @@ document.getElementById("closeAddWorkerModal").addEventListener("click", () => {
 // form validation
 document.querySelectorAll("input").forEach((input) => {
   input.addEventListener("blur", () => {
-    if (input.value.trim() === "") {
+    if (input.value.trim() === "" && input.id !== "workerPhoto") {
       showError(input, "Ce champ est requis.");
     } else {
       switch (input.id) {
         case "workerName": {
           if (input.value.trim().length < 3 || input.value.trim().length > 50) {
             showError(input, "Le nom doit contenir entre 3 et 50 character.");
+          }
+          break;
+        }
+        case "entrepriseInput": {
+          if (input.value.trim().length < 2 || input.value.trim().length > 50) {
+            showError(
+              input,
+              "Le nom d'entreprise doit contenir entre 2 et 50 character."
+            );
+          }
+          break;
+        }
+        case "posteInput": {
+          if (input.value.trim().length < 2 || input.value.trim().length > 50) {
+            showError(
+              input,
+              "Le nom de poste doit contenir entre 2 et 50 character."
+            );
           }
           break;
         }
@@ -202,6 +233,54 @@ document.querySelectorAll("input").forEach((input) => {
           }
           break;
         }
+        default:
+          break;
+      }
+    }
+  });
+});
+
+document.querySelectorAll("input").forEach((input) => {
+  input.addEventListener("change", () => {
+    if (
+      input.value.trim() === "" &&
+      (input.id === "startDate" || input.id === "endDate")
+    ) {
+      showError(input, "Ce champ est requis.");
+    } else {
+      switch (input.id) {
+        case "startDate": {
+          let endDateInput = document.getElementById("endDate");
+          hideError(input);
+          if (endDateInput.value.trim() !== "") {
+            hideError(endDateInput);
+            let result = checkDates(
+              input.value.trim(),
+              endDateInput.value.trim()
+            );
+            if (!result.ok) {
+              showError(input, result.msg);
+            }
+          }
+          break;
+        }
+        case "endDate": {
+          let startDateInput = document.getElementById("startDate");
+          hideError(input);
+          if (startDateInput.value.trim() !== "") {
+            hideError(startDateInput);
+            let result = checkDates(
+              startDateInput.value.trim(),
+              input.value.trim()
+            );
+            if (!result.ok) {
+              showError(input, result.msg);
+            }
+          }
+          break;
+        }
+        default:
+          break;
       }
     }
   });
