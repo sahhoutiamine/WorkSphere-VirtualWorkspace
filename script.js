@@ -131,6 +131,16 @@ const roomTitles = {
   archives: "Salle d'Archives",
 };
 
+function isValidEmail(email) {
+  let pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return pattern.test(email);
+}
+
+function isValidPhone(phone) {
+  let numbers = phone.replace(/\s/g, "");
+  return /^\d{10}$/.test(numbers);
+}
+
 let workersList = workers.workers;
 const unassignedList = document.getElementById("unassignedList");
 
@@ -167,10 +177,32 @@ document.getElementById("closeAddWorkerModal").addEventListener("click", () => {
   document.getElementById("addWorkerModal").style.display = "none";
 });
 
+// form validation
 document.querySelectorAll("input").forEach((input) => {
   input.addEventListener("blur", () => {
     if (input.value.trim() === "") {
       showError(input, "Ce champ est requis.");
+    } else {
+      switch (input.id) {
+        case "workerName": {
+          if (input.value.trim().length < 3 || input.value.trim().length > 50) {
+            showError(input, "Le nom doit contenir entre 3 et 50 character.");
+          }
+          break;
+        }
+        case "workerEmail": {
+          if (!isValidEmail(input.value.trim())) {
+            showError(input, "Veuillez entrer une adresse e-mail valide.");
+          }
+          break;
+        }
+        case "workerPhone": {
+          if (!isValidPhone(input.value.trim())) {
+            showError(input, "Veuillez entrer un numéro de téléphone valide.");
+          }
+          break;
+        }
+      }
     }
   });
 });
