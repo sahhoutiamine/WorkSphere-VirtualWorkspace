@@ -98,8 +98,6 @@ let workers = {
     },
   ],
 };
-let workersList = workers.workers;
-const unassignedList = document.getElementById("unassignedList");
 
 const roleColors = {
   Réceptionniste: "role-receptionist",
@@ -108,6 +106,33 @@ const roleColors = {
   Manager: "role-manager",
   Nettoyage: "role-cleaning",
 };
+const roomSizes = {
+  conference: 10,
+  reception: 3,
+  server: 5,
+  security: 4,
+  staff: 15,
+  archives: 5,
+};
+
+const roomPermissions = {
+  reception: ["Manager", "Réceptionniste", "Nettoyage"],
+  server: ["Manager", "Technicien IT"],
+  security: ["Manager", "Agent de sécurité", "Nettoyage"],
+  archives: ["Manager"],
+};
+
+const roomTitles = {
+  conference: "Salle de Conférence",
+  reception: "Réception",
+  server: "Salle des Serveurs",
+  security: "Salle de Sécurité",
+  staff: "Salle du Personnel",
+  archives: "Salle d'Archives",
+};
+
+let workersList = workers.workers;
+const unassignedList = document.getElementById("unassignedList");
 
 if (workersList.length === 0) {
   unassignedList.innerHTML =
@@ -133,3 +158,11 @@ if (workersList.length === 0) {
 function getRoleStyle(role) {
   return roleColors[role] || "role-default";
 }
+// open modal to add worker
+document.getElementById("addWorkerBtn").addEventListener("click", () => {
+  document.getElementById("addWorkerModal").style.display = "flex";
+});
+// close add modal
+document.getElementById("closeAddWorkerModal").addEventListener("click", () => {
+  document.getElementById("addWorkerModal").style.display = "none";
+});

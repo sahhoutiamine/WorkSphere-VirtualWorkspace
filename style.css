@@ -779,7 +779,7 @@ body {
     margin-top: 0.8rem;
     gap: 0.3rem;
     position: absolute;
-    top: 15rem;
+    margin-top: 2rem;
     right: 7rem;
     background-size: 100% 100% !important;
     background-position: center !important;
@@ -921,13 +921,13 @@ body {
     margin-top: 0.8rem;
     gap: 0.3rem;
     position: absolute;
-    top: 25rem;
+    margin-top: 10rem;
     right: -9.4rem;
     background-size: 100% 100% !important;
     background-position: center !important;
     overflow: scroll;
-    grid-template-columns: 1.5fr 0.8fr 0.8fr 0.85fr;
-    grid-template-rows: 1fr 0.8fr 1fr;
+    grid-template-columns: 1.5fr 0.7fr 0.8fr 0.85fr;
+    grid-template-rows: 1fr 0.9fr 1fr;
   }
 
   .worker-card {
@@ -1085,7 +1085,8 @@ body {
     width: 600px;
     gap: 0.2rem;
     position: absolute;
-    top: 25rem;
+    margin-top: 32rem;
+    top: 0rem;
     right: -5.3rem;
     background-size: 100% 100% !important;
     background-position: center !important;
