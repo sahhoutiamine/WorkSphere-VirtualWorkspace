@@ -8,7 +8,7 @@
   </head>
   <body>
     <div class="container">
-      <!-- Sidebar -->
+     
       <div class="sidebar">
         <h2>Personnel Non Assigné</h2>
         <button class="add-worker-btn" id="addWorkerBtn">
@@ -17,7 +17,7 @@
         <div id="unassignedList"></div>
       </div>
 
-      <!-- Main Content -->
+    
       <div class="main-content">
         <div class="workspace-header">
           <h1>WorkSphere - Virtual Workspace</h1>
@@ -27,7 +27,7 @@
         </div>
 
         <div class="workspace-grid">
-          <!-- Conference Room -->
+      
           <div class="room-card" id="room-conference">
             <div class="room-header">
               <h3>Salle de Conférence</h3>
@@ -39,7 +39,7 @@
             </div>
           </div>
 
-          <!-- Reception -->
+      
           <div class="room-card required-empty" id="room-reception">
             <div class="room-header">
               <h3>Réception</h3>
@@ -51,7 +51,7 @@
             </div>
           </div>
 
-          <!-- Server Room -->
+         
           <div class="room-card required-empty" id="room-server">
             <div class="room-header">
               <h3>Salle des Serveurs</h3>
@@ -63,7 +63,7 @@
             </div>
           </div>
 
-          <!-- Security Room -->
+      
           <div class="room-card required-empty" id="room-security">
             <div class="room-header">
               <h3>Salle de Sécurité</h3>
@@ -75,13 +75,13 @@
             </div>
           </div>
 
-          <!-- Corridor Vertical -->
+          
           <div class="corridor">Couloir</div>
 
-          <!-- Corridor Horizontal -->
+          
           <div class="corridor-horizontal">Couloir</div>
 
-          <!-- Staff Room -->
+         
           <div class="room-card" id="room-staff">
             <div class="room-header">
               <h3>Salle du Personnel</h3>
@@ -93,7 +93,7 @@
             </div>
           </div>
 
-          <!-- Archives Room -->
+         
           <div class="room-card required-empty" id="room-archives">
             <div class="room-header">
               <h3>Salle d'Archives</h3>
@@ -108,7 +108,7 @@
       </div>
     </div>
 
-    <!-- Add Worker Modal -->
+    
     <div class="modal" id="addWorkerModal">
       <div class="modal-content">
         <div class="modal-header">
@@ -151,54 +151,7 @@
           </div>
           <div class="experiences-section">
             <h3 style="margin-bottom: 15px">Expériences Professionnelles</h3>
-            <div id="experiencesList">
-              <div class="form-group">
-                <label>Poste *</label>
-                <input
-                  id="posteInput"
-                  type="text"
-                  class="exp-title"
-                  placeholder="Ex: Développeur Web"
-                  required
-                />
-              </div>
-
-              <div class="form-group">
-                <label>Entreprise *</label>
-                <input
-                  id="entrepriseInput"
-                  type="text"
-                  class="exp-company"
-                  placeholder="Ex: TechCorp"
-                  required
-                />
-              </div>
-
-              <div class="form-group">
-                <label>Période *</label>
-                <div class="date-period">
-                  <div class="date-input-group">
-                    <label class="date-label">Début</label>
-                    <input
-                      id="startDate"
-                      type="date"
-                      class="exp-start-date"
-                      required
-                    />
-                  </div>
-
-                  <div class="date-input-group">
-                    <label class="date-label">Fin</label>
-                    <input
-                      id="endDate"
-                      type="date"
-                      class="exp-end-date"
-                      required
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
+            <div id="experiencesList"></div>
             <button
               type="button"
               class="add-experience-btn"
@@ -212,7 +165,7 @@
       </div>
     </div>
 
-    <!-- Profile Modal -->
+   
     <div class="modal" id="profileModal">
       <div class="modal-content profile-modal-content">
         <div class="modal-header">
@@ -223,7 +176,7 @@
       </div>
     </div>
 
-    <!-- Select Worker Modal -->
+ 
     <div class="modal" id="selectWorkerModal">
       <div class="modal-content">
         <div class="modal-header">
