@@ -526,30 +526,16 @@ function addNewWorker(e) {
 }
 
 function makeWorkerCard(worker) {
-  return (
-    '<div class="worker-card" data-id="' +
-    worker.id +
-    '">' +
-    '<img src="' +
-    worker.photo +
-    '" alt="' +
-    worker.name +
-    '">' +
-    '<div class="worker-info">' +
-    "<h3>" +
-    worker.name +
-    "</h3>" +
-    "<p>" +
-    worker.email +
-    "</p>" +
-    '<span class="role-badge ' +
-    getRoleStyle(worker.role) +
-    '">' +
-    worker.role +
-    "</span>" +
-    "</div>" +
-    "</div>"
-  );
+  return `<div class="worker-card" data-id="${worker.id}">
+    <img src="${worker.photo}" alt="${worker.name}">
+    <div class="worker-info">
+        <h3>${worker.name}</h3>
+        <p>${worker.email}</p>
+        <span class="role-badge ${getRoleStyle(worker.role)}">${
+    worker.role
+  }</span>
+    </div>
+</div>`;
 }
 
 function showUnassigned() {
@@ -583,24 +569,12 @@ function showRoom(room) {
   roomWorkers.forEach((worker) => {
     let workerDiv = document.createElement("div");
     workerDiv.className = "room-worker";
-    workerDiv.innerHTML =
-      '<img src="' +
-      worker.photo +
-      '" alt="' +
-      worker.name +
-      '" data-id="' +
-      worker.id +
-      '">' +
-      '<div class="room-worker-info" data-id="' +
-      worker.id +
-      '"><h4>' +
-      worker.name +
-      "</h4><p>" +
-      worker.role +
-      "</p></div>" +
-      '<button class="remove-btn" data-id="' +
-      worker.id +
-      '" title="Retirer">✕</button>';
+    workerDiv.innerHTML = `<img src="${worker.photo}" alt="${worker.name}" data-id="${worker.id}">
+<div class="room-worker-info" data-id="${worker.id}">
+    <h4>${worker.name}</h4>
+    <p>${worker.role}</p>
+</div>
+<button class="remove-btn" data-id="${worker.id}" title="Retirer">✕</button>`;
 
     workersContainer.appendChild(workerDiv);
   });
@@ -716,52 +690,45 @@ function showWorkerProfile(workerId) {
   let experiencesHTML = "";
   if (worker.experiences.length > 0) {
     worker.experiences.forEach((exp) => {
-      experiencesHTML +=
-        '<div class="info-row"><div class="info-label">' +
-        exp.title +
-        "</div>" +
-        '<div class="info-value">' +
-        exp.company +
-        " (" +
-        exp.period +
-        ")</div></div>";
+      experiencesHTML += `<div class="info-row">
+    <div class="info-label">${exp.title}</div>
+    <div class="info-value">${exp.company} (${exp.period})</div>
+</div>`;
     });
   } else {
     experiencesHTML =
       '<div class="info-row"><div class="info-value">Aucune expérience renseignée</div></div>';
   }
 
-  getElement("profileContent").innerHTML =
-    '<div class="profile-header">' +
-    '<img src="' +
-    worker.photo +
-    '" alt="' +
-    worker.name +
-    '"><h2>' +
-    worker.name +
-    "</h2>" +
-    '<span class="role-badge ' +
-    getRoleStyle(worker.role) +
-    '" style="font-size: 14px; padding: 8px 16px;">' +
-    worker.role +
-    "</span>" +
-    "</div>" +
-    '<div class="profile-info">' +
-    '<div class="info-row"><div class="info-label">Email</div><div class="info-value">' +
-    worker.email +
-    "</div></div>" +
-    '<div class="info-row"><div class="info-label">Téléphone</div><div class="info-value">' +
-    worker.phone +
-    "</div></div>" +
-    '<div class="info-row"><div class="info-label">Localisation</div>' +
-    '<div class="info-value">' +
-    (worker.room ? roomTitles[worker.room] : "Non assigné") +
-    "</div></div>" +
-    "</div>" +
-    '<div class="profile-info">' +
-    '<h3 style="margin-bottom: 15px; color: #495057;">Expériences Professionnelles</h3>' +
-    experiencesHTML +
-    "</div>";
+  getElement("profileContent").innerHTML = `<div class="profile-header">
+    <img src="${worker.photo}" alt="${worker.name}">
+    <h2>${worker.name}</h2>
+    <span class="role-badge ${getRoleStyle(
+      worker.role
+    )}" style="font-size: 14px; padding: 8px 16px;">
+        ${worker.role}
+    </span>
+</div>
+<div class="profile-info">
+    <div class="info-row">
+        <div class="info-label">Email</div>
+        <div class="info-value">${worker.email}</div>
+    </div>
+    <div class="info-row">
+        <div class="info-label">Téléphone</div>
+        <div class="info-value">${worker.phone}</div>
+    </div>
+    <div class="info-row">
+        <div class="info-label">Localisation</div>
+        <div class="info-value">${
+          worker.room ? roomTitles[worker.room] : "Non assigné"
+        }</div>
+    </div>
+</div>
+<div class="profile-info">
+    <h3 style="margin-bottom: 15px; color: #495057;">Expériences Professionnelles</h3>
+    ${experiencesHTML}
+</div>`;
 
   openModal("profileModal");
 }
