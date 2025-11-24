@@ -211,6 +211,14 @@ const roomPermissions = {
   server: ["Technicien IT", "Manager"],
   security: ["Agent de Sécurité", "Manager", "Nettoyage"],
   archives: ["Manager"],
+  staff: [
+    "Manager",
+    "Nettoyage",
+    "Employé",
+    "Réceptionniste",
+    "Technicien IT",
+    "Agent de Sécurité",
+  ],
 };
 
 const roomTitles = {
@@ -243,7 +251,7 @@ function getRoleStyle(role) {
 }
 
 function canWorkInRoom(role, room) {
-  if (room === "conference" || room === "staff") return true;
+  if (room === "conference") return true;
   if (role === "Manager") return true;
   if (!roomPermissions[room]) return true;
   return roomPermissions[room].includes(role);
@@ -306,21 +314,21 @@ function hideError(input) {
 }
 
 const fieldChecks = {
-  workerName: function (value) {
+  workerName: (value) => {
     if (!value) {
       showError("workerName", "Le nom complet est requis");
       return false;
     }
     return true;
   },
-  workerRole: function (value) {
+  workerRole: (value) => {
     if (!value) {
       showError("workerRole", "Veuillez sélectionner un rôle");
       return false;
     }
     return true;
   },
-  workerEmail: function (value) {
+  workerEmail: (value) => {
     if (!value) {
       showError("workerEmail", "L'email est requis");
       return false;
@@ -331,7 +339,7 @@ const fieldChecks = {
     }
     return true;
   },
-  workerPhone: function (value) {
+  workerPhone: (value) => {
     if (!value) {
       showError("workerPhone", "Le téléphone est requis");
       return false;
@@ -367,7 +375,7 @@ function checkExperiences() {
 
   let allGood = true;
 
-  experienceItems.forEach(function (item) {
+  experienceItems.forEach((item) => {
     let titleField = item.querySelector(".exp-title");
     let companyField = item.querySelector(".exp-company");
     let startField = item.querySelector(".exp-start-date");
@@ -408,10 +416,10 @@ function checkExperiences() {
 }
 
 function checkAllFields() {
-  document.querySelectorAll(".error-msg").forEach(function (el) {
+  document.querySelectorAll(".error-msg").forEach((el) => {
     el.remove();
   });
-  document.querySelectorAll(".error").forEach(function (el) {
+  document.querySelectorAll(".error").forEach((el) => {
     el.classList.remove("error");
   });
 
@@ -435,10 +443,10 @@ function closeModal(modalId) {
     getElement("workerForm").reset();
     getElement("photoPreview").style.display = "none";
     getElement("experiencesList").innerHTML = "";
-    document.querySelectorAll(".error-msg").forEach(function (el) {
+    document.querySelectorAll(".error-msg").forEach((el) => {
       el.remove();
     });
-    document.querySelectorAll(".error").forEach(function (el) {
+    document.querySelectorAll(".error").forEach((el) => {
       el.classList.remove("error");
     });
   }
@@ -482,7 +490,7 @@ function addNewWorker(e) {
   let experiences = [];
   let experienceItems = document.querySelectorAll(".experience-item");
 
-  experienceItems.forEach(function (item) {
+  experienceItems.forEach((item) => {
     let startDate = new Date(item.querySelector(".exp-start-date").value);
     let endDate = new Date(item.querySelector(".exp-end-date").value);
 
@@ -546,7 +554,7 @@ function makeWorkerCard(worker) {
 
 function showUnassigned() {
   let list = getElement("unassignedList");
-  let noRoomWorkers = workers.filter(function (w) {
+  let noRoomWorkers = workers.filter((w) => {
     return !w.room;
   });
 
@@ -564,7 +572,7 @@ function showUnassigned() {
 }
 
 function showRoom(room) {
-  let roomWorkers = workers.filter(function (w) {
+  let roomWorkers = workers.filter((w) => {
     return w.room === room;
   });
   getElement("cap-" + room).textContent = roomWorkers.length;
@@ -572,7 +580,7 @@ function showRoom(room) {
   let workersContainer = getElement("workers-" + room);
   workersContainer.innerHTML = "";
 
-  roomWorkers.forEach(function (worker) {
+  roomWorkers.forEach((worker) => {
     let workerDiv = document.createElement("div");
     workerDiv.className = "room-worker";
     workerDiv.innerHTML =
@@ -624,7 +632,7 @@ function updateRoomDisplay(room) {
     roomPermissions[room] && room !== "conference" && room !== "staff";
 
   if (needsSpecificRole) {
-    let hasRequiredWorker = workers.some(function (w) {
+    let hasRequiredWorker = workers.some((w) => {
       return w.room === room;
     });
     if (hasRequiredWorker) {
@@ -636,7 +644,7 @@ function updateRoomDisplay(room) {
 }
 
 function removeWorkerFromRoom(workerId) {
-  let worker = workers.find(function (w) {
+  let worker = workers.find((w) => {
     return w.id === workerId;
   });
   if (worker) {
@@ -648,12 +656,12 @@ function removeWorkerFromRoom(workerId) {
 }
 
 function putWorkerInRoom(workerId, room) {
-  let worker = workers.find(function (w) {
+  let worker = workers.find((w) => {
     return w.id === workerId;
   });
   if (!worker) return;
 
-  let currentWorkerCount = workers.filter(function (w) {
+  let currentWorkerCount = workers.filter((w) => {
     return w.room === room;
   }).length;
   if (currentWorkerCount >= roomSizes[room]) {
@@ -668,7 +676,7 @@ function putWorkerInRoom(workerId, room) {
 }
 
 function openWorkerSelection(room) {
-  let currentWorkerCount = workers.filter(function (w) {
+  let currentWorkerCount = workers.filter((w) => {
     return w.room === room;
   }).length;
   if (currentWorkerCount >= roomSizes[room]) {
@@ -677,7 +685,7 @@ function openWorkerSelection(room) {
   }
 
   currentRoom = room;
-  let availableWorkers = workers.filter(function (w) {
+  let availableWorkers = workers.filter((w) => {
     return !w.room && canWorkInRoom(w.role, room);
   });
 
@@ -700,14 +708,14 @@ function openWorkerSelection(room) {
 }
 
 function showWorkerProfile(workerId) {
-  let worker = workers.find(function (w) {
+  let worker = workers.find((w) => {
     return w.id === workerId;
   });
   if (!worker) return;
 
   let experiencesHTML = "";
   if (worker.experiences.length > 0) {
-    worker.experiences.forEach(function (exp) {
+    worker.experiences.forEach((exp) => {
       experiencesHTML +=
         '<div class="info-row"><div class="info-label">' +
         exp.title +
@@ -820,7 +828,7 @@ function startApp() {
     "security",
     "staff",
     "archives",
-  ].forEach(function (room) {
+  ].forEach((room) => {
     showRoom(room);
   });
 }
